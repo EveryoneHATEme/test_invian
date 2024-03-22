@@ -3,11 +3,12 @@ from datetime import datetime
 import requests
 
 from generator import Generator, RandomGenerator
+from config import config
 
 
 class Sensor:
     def __init__(self,
-                 controller_address: str,
+                 controller_address: str = config.CONTROLLER_URL,
                  data_generator_cls: type[Generator] = RandomGenerator,
                  timeout: float = 1. / 300) -> None:
         self.data_generator = data_generator_cls()

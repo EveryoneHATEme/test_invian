@@ -1,14 +1,14 @@
 from multiprocessing import Process
-from time import sleep
 
 from sensors.sensor import Sensor
+from config import config
 
 
 class SensorsManager:
     def __init__(self,
                  number_of_sensors: int = 8,
                  sensor_request_timeout: float = 1. / 300,
-                 controller_address: str = 'http://127.0.0.1:8000') -> None:
+                 controller_address: str = config.CONTROLLER_URL) -> None:
         self.sensor_request_timeout = sensor_request_timeout
         self.controller_address = controller_address
 
@@ -20,7 +20,6 @@ class SensorsManager:
     def start(self) -> None:
         for process in self.processes:
             process.start()
-        print('started')
 
     def __delete__(self) -> None:
         for sensor, process in zip(self.sensors, self.processes):
