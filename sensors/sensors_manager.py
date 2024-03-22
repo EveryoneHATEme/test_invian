@@ -28,7 +28,10 @@ class SensorsManager:
             process.join()
 
 
-if __name__ == '__main__':
+def launch() -> None:
     manager = SensorsManager()
     manager.start()
-    sleep(5)
+
+
+if __name__ == '__main__':
+    launch()
