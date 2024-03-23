@@ -6,7 +6,7 @@ from controller.analytics.allowed_signals import AllowedSignals
 
 
 class DataAnalyser:
-    def __init__(self):
+    def __init__(self) -> None:
         self.last_decision_datetime: datetime | None = None
 
     def analyze(self, data: list[dict[str, int | str]]) -> AllowedSignals:

@@ -2,6 +2,5 @@ from enum import Enum
 
 
 class AllowedSignals(Enum):
-    UP = 'up'
-    DOWN = 'down'
-
+    UP = "up"
+    DOWN = "down"

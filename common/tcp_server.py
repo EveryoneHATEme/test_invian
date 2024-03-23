@@ -24,7 +24,7 @@ class TCPServer:
         if self.server_task is not None:
             self.server_task.cancel()
 
-    async def start_server_and_serving(self):
+    async def start_server_and_serving(self) -> None:
         self.server = await asyncio.start_server(
             self.handle_client, host=self.server_ip, port=self.port
         )

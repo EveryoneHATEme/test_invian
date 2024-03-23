@@ -2,6 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import json
 from datetime import datetime
+from typing import Awaitable, Callable, AsyncGenerator
 
 from fastapi import FastAPI, Response, BackgroundTasks
 
@@ -12,7 +13,7 @@ from common import TCPServer
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await consumer.connect()
     await producer.connect()
     task = asyncio.create_task(run_periodically(send_message_to_manipulator))
@@ -39,7 +40,7 @@ async def get_sensor_messages(
     return Response()
 
 
-async def run_periodically(func, period=5):
+async def run_periodically(func: Callable[[], Awaitable[None]], period=5) -> None:
     try:
         while True:
             await asyncio.sleep(period)
@@ -48,10 +49,13 @@ async def run_periodically(func, period=5):
         pass
 
 
-async def send_message_to_manipulator():
+async def send_message_to_manipulator() -> None:
     messages = await consumer.get_last_messages()
     status = analytics.analyze(messages)
     message_to_send = json.dumps(
-        {"datetime": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), "status": status.name}
+        {
+            "datetime": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "status": status.name,
+        }
     )
     await tcp_server.send_message(message_to_send)

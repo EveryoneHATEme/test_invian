@@ -5,7 +5,7 @@ from controller.analytics.data_analyser import DataAnalyser
 
 
 class MeanThresholdAnalyser(DataAnalyser):
-    def __init__(self, threshold: float = 0.0):
+    def __init__(self, threshold: float = 0.0) -> None:
         super().__init__()
         self.threshold = threshold
 

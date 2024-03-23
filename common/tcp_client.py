@@ -9,20 +9,22 @@ class TCPClient:
         self,
         host_ip: str = config.CONTROLLER_IP,
         port: int = config.CONTROLLER_TCP_PORT,
-    ):
+    ) -> None:
         self.host_ip = host_ip
         self.port = port
         self.reader: StreamReader | None = None
         self.writer: StreamWriter | None = None
 
     async def connect(self) -> None:
-        self.reader, self.writer = await asyncio.open_connection(self.host_ip, self.port)
+        self.reader, self.writer = await asyncio.open_connection(
+            self.host_ip, self.port
+        )
 
     async def disconnect(self) -> None:
         self.writer.close()
         await self.writer.wait_closed()
 
-    async def receive_messages(self):
+    async def receive_messages(self) -> None:
         try:
             while True:
                 message = await self.reader.read(1024)
