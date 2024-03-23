@@ -1,25 +1,63 @@
 import asyncio
+from contextlib import asynccontextmanager
+import json
+from datetime import datetime
 
 from fastapi import FastAPI, Response, BackgroundTasks
-import aio_pika
 
-from models import SensorDataModel
-from config import config
-from message_queue import Producer, Consumer
-from utils import repeat_every
-
-app = FastAPI()
-consumer = Consumer()
-producer = Producer()
+from controller.models import SensorDataModel
+from controller.message_queue import Producer, Consumer
+from controller.analytics import MeanThresholdAnalyser
+from common import TCPServer
 
 
-@app.on_event("startup")
-async def start_queue():
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
     await consumer.connect()
     await producer.connect()
+    task = asyncio.create_task(run_periodically(send_message_to_manipulator))
+    await tcp_server.start()
+    yield
+    await consumer.disconnect()
+    await producer.disconnect()
+    task.cancel()
+    await tcp_server.stop()
 
 
-@app.post('/')
-async def get_sensor_messages(sensor_data: SensorDataModel, background_tasks: BackgroundTasks) -> Response:
+app = FastAPI(lifespan=lifespan)
+consumer = Consumer()
+producer = Producer()
+tcp_server = TCPServer()
+analytics = MeanThresholdAnalyser(threshold=1.0)
+
+
+@app.post("/")
+async def get_sensor_messages(
+    sensor_data: SensorDataModel, background_tasks: BackgroundTasks
+) -> Response:
     background_tasks.add_task(producer.add_sensor_message, sensor_data)
     return Response()
+
+
+async def run_periodically(func, period=5):
+    try:
+        while True:
+            await asyncio.sleep(period)
+            print('calling1')
+            await func()
+            print('called')
+    except asyncio.CancelledError:
+        pass
+
+
+async def send_message_to_manipulator():
+    print('called')
+    messages = await consumer.get_last_messages()
+    print(f'received {len(messages)} messages')
+    status = analytics.analyze(messages)
+    print(f'status: {status.name}')
+    message_to_send = json.dumps(
+        {"datetime": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), "status": status.name}
+    )
+    print('sending message to manipulator')
+    await tcp_server.send_message(message_to_send)

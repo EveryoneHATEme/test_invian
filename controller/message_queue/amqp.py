@@ -1,5 +1,5 @@
 import aio_pika
-from config import config
+from common.config import config
 
 
 class AMQP:
@@ -21,6 +21,6 @@ class AMQP:
         )
         await self.queue.bind(self.exchange, config.RABBITMQ_QUEUE)
 
-    def __del__(self):
-        self.channel.close()
-        self.connection.close()
+    async def disconnect(self):
+        await self.channel.close()
+        await self.connection.close()

@@ -1,2 +1,3 @@
-from consumer import Consumer
-from producer import Producer
+from controller.message_queue.consumer import Consumer
+from controller.message_queue.producer import Producer
+
