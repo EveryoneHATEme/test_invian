@@ -1,3 +1,3 @@
-from generator import *
-from sensor import *
-from sensors_manager import *
+from sensors.generators import Generator, RandomGenerator
+from sensors.sensor import Sensor
+from sensors.sensors_manager import SensorsManager

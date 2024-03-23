@@ -1,7 +1,7 @@
 from multiprocessing import Process
 
 from sensors.sensor import Sensor
-from config import config
+from common import config
 
 
 class SensorsManager:
@@ -21,16 +21,7 @@ class SensorsManager:
         for process in self.processes:
             process.start()
 
-    def __delete__(self) -> None:
+    def stop(self) -> None:
         for sensor, process in zip(self.sensors, self.processes):
             del sensor
             process.join()
-
-
-def launch() -> None:
-    manager = SensorsManager()
-    manager.start()
-
-
-if __name__ == '__main__':
-    launch()
