@@ -36,9 +36,6 @@ class TCPServer:
             self.writer = writer
 
     async def send_message(self, message: str) -> None:
-        print(f'writing message {message}')
         self.writer.write(message.encode())
-        print(f'drain writer')
         await self.writer.drain()
-        print(f'sleeping')
         await asyncio.sleep(0)

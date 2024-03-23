@@ -43,21 +43,15 @@ async def run_periodically(func, period=5):
     try:
         while True:
             await asyncio.sleep(period)
-            print('calling1')
             await func()
-            print('called')
     except asyncio.CancelledError:
         pass
 
 
 async def send_message_to_manipulator():
-    print('called')
     messages = await consumer.get_last_messages()
-    print(f'received {len(messages)} messages')
     status = analytics.analyze(messages)
-    print(f'status: {status.name}')
     message_to_send = json.dumps(
         {"datetime": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"), "status": status.name}
     )
-    print('sending message to manipulator')
     await tcp_server.send_message(message_to_send)
