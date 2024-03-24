@@ -9,8 +9,10 @@ class MeanThresholdAnalyser(DataAnalyser):
         super().__init__()
         self.threshold = threshold
 
-    def analyze(self, data: list[dict[str, int | str]]) -> AllowedSignals:
-        self.filter_outdated(data)
-        mean_value = sum(map(itemgetter("payload"), data)) / len(data)
-        self.update_last_decision_datetime()
+    def analyze(self, data: list[tuple[int, int]]) -> AllowedSignals:
+        if data:
+            mean_value = sum(map(itemgetter(1), data)) / len(data)
+        else:
+            mean_value = 0.0
+        print(f"{mean_value=}")
         return AllowedSignals.UP if mean_value > self.threshold else AllowedSignals.DOWN

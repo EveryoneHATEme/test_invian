@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import requests
+from pytz import timezone
 
 from sensors.generators import Generator, RandomGenerator
 from common import config
@@ -11,7 +12,7 @@ class Sensor:
         self,
         controller_address: str = config.CONTROLLER_URL,
         data_generator_cls: type[Generator] = RandomGenerator,
-        timeout: float = 1.0 / 300,
+        timeout: float = 1.0 / config.SENSOR_REQUESTS_FREQUENCY,
     ) -> None:
         self.data_generator = data_generator_cls()
 
@@ -24,7 +25,9 @@ class Sensor:
         self.session.close()
 
     def send(self, payload: int) -> None:
-        self.payload["datetime"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        self.payload["datetime"] = datetime.now(timezone("UTC")).strftime(
+            "%Y-%m-%dT%H:%M:%S"
+        )
         self.payload["payload"] = payload
 
         try:

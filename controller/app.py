@@ -2,14 +2,16 @@ import asyncio
 from contextlib import asynccontextmanager
 import json
 from datetime import datetime
+from time import time
 from typing import Awaitable, Callable, AsyncGenerator
 
 from fastapi import FastAPI, Response, BackgroundTasks
+from pytz import timezone
 
 from controller.models import SensorDataModel
 from controller.message_queue import Producer, Consumer
 from controller.analytics import MeanThresholdAnalyser
-from common import TCPServer
+from common import TCPServer, config
 
 
 @asynccontextmanager
@@ -40,11 +42,21 @@ async def get_sensor_messages(
     return Response()
 
 
-async def run_periodically(func: Callable[[], Awaitable[None]], period=5) -> None:
+async def run_periodically(
+    func: Callable[[], Awaitable[None]],
+    period: int | float = config.MANIPULATOR_UPDATE_TIME,
+) -> None:
+    sleep_time = period
     try:
         while True:
-            await asyncio.sleep(period)
+            await asyncio.sleep(sleep_time)
+            start_time = time()
             await func()
+            time_taken = time() - start_time
+            if time_taken >= period:
+                sleep_time = 0.0
+            else:
+                sleep_time = period - time_taken
     except asyncio.CancelledError:
         pass
 
@@ -54,7 +66,7 @@ async def send_message_to_manipulator() -> None:
     status = analytics.analyze(messages)
     message_to_send = json.dumps(
         {
-            "datetime": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "datetime": datetime.now(timezone("UTC")).strftime("%Y-%m-%dT%H:%M:%S"),
             "status": status.name,
         }
     )

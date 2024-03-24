@@ -14,7 +14,6 @@ class AMQP:
             config.RABBITMQ_URL, timeout=240
         )
         self.channel = await self.connection.channel()
-        await self.channel.set_qos(prefetch_count=1)
         self.exchange = await self.channel.declare_exchange(
             config.RABBITMQ_EXCHANGE, aio_pika.ExchangeType.DIRECT, durable=True
         )

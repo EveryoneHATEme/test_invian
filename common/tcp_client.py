@@ -1,5 +1,6 @@
 import asyncio
 from asyncio import StreamReader, StreamWriter
+from typing import Generator
 
 from common.config import config
 
@@ -24,7 +25,7 @@ class TCPClient:
         self.writer.close()
         await self.writer.wait_closed()
 
-    async def receive_messages(self) -> None:
+    async def receive_messages(self) -> Generator[bytes, None, None]:
         try:
             while True:
                 message = await self.reader.read(1024)
