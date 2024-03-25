@@ -18,7 +18,6 @@ class Consumer(AMQP):
 
         await self.queue.declare()
         messages_count = self.queue.declaration_result.message_count
-        print(f"{messages_count=}")
 
         for i in range(messages_count):
             message = await self.queue.get(no_ack=True, fail=False)
