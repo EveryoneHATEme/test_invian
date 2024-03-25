@@ -1,10 +1,8 @@
-import asyncio
 import struct
 from datetime import datetime
 from collections import namedtuple
 
 import aio_pika
-from pytz import utc
 
 from controller.message_queue.amqp import AMQP
 from common.config import config
@@ -20,6 +18,7 @@ class Consumer(AMQP):
 
         await self.queue.declare()
         messages_count = self.queue.declaration_result.message_count
+        print(f"{messages_count=}")
 
         for i in range(messages_count):
             message = await self.queue.get(no_ack=True, fail=False)

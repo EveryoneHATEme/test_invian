@@ -1,3 +1,4 @@
+import asyncio
 import json
 import pprint
 
@@ -9,7 +10,13 @@ class Manipulator:
         self.client = TCPClient()
 
     async def listen_commands(self):
-        await self.client.connect()
+        while True:
+            try:
+                await self.client.connect()
+            except ConnectionRefusedError:
+                await asyncio.sleep(1)
+            else:
+                break
         async for command in self.client.receive_messages():
             parsed_command = json.loads(command)
             self.do_action(parsed_command)

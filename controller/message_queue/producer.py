@@ -3,7 +3,6 @@ from datetime import datetime
 import struct
 
 import aio_pika
-from pytz import timezone
 
 from controller.message_queue.amqp import AMQP
 from controller.models import SensorDataModel

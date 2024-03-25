@@ -1,4 +1,5 @@
 from datetime import datetime
+from time import sleep
 
 import requests
 from pytz import timezone
@@ -35,7 +36,10 @@ class Sensor:
                 url=self.controller_address, json=self.payload, timeout=self.timeout
             )
         except requests.exceptions.Timeout:
-            print("Request timed")
+            # print("Request timed")
+            return
+        except requests.exceptions.ConnectionError:
+            sleep(1)
 
     def start(self) -> None:
         self.loop()

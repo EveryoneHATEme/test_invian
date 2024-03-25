@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  controller:
+    build:
+      context: .
+      dockerfile: ./controller/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+        restart: true
+    volumes:
+      - .:/controller
+    ports:
+      - "8888:8888"
+      - "8000:8000"
+    restart: unless-stopped
+    hostname: controller
+    environment:
+      - "RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/"
+      - "PYTHONUNBUFFERED=1"
+
+  manipulator:
+    build:
+      context: .
+      dockerfile: ./manipulator/Dockerfile
+    depends_on:
+      - controller
+    restart: on-failure
+    environment:
+      - "PYTHONUNBUFFERED=1"
+
+  rabbitmq:
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  sensors:
+    build:
+      context: .
+      dockerfile: ./sensors/Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 8
+    depends_on:
+      - controller
+    restart: on-failure
+    environment:
+      - "CONTROLLER_URL=http://controller:8000"

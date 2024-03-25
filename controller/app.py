@@ -20,6 +20,7 @@ from common import TCPServer, config
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await consumer.connect()
     await producer.connect()
+    print('adding task')
     task = asyncio.create_task(run_periodically(send_message_to_manipulator))
     await tcp_server.start()
     initialize_database()
@@ -66,15 +67,23 @@ async def get_history(from_timestamp: int, to_timestamp: int) -> Response:
     )
 
 
+@app.get('/healthcheck')
+async def get_healthcheck() -> Response:
+    return Response('OK')
+
+
 async def run_periodically(
     func: Callable[[], Awaitable[None]],
     period: int | float = config.MANIPULATOR_UPDATE_TIME,
 ) -> None:
     sleep_time = period
+    print('run periodically')
     try:
         while True:
+            print('sleeping')
             await asyncio.sleep(sleep_time)
             start_time = time()
+            print('calling')
             await func()
             time_taken = time() - start_time
             if time_taken >= period:
@@ -86,7 +95,9 @@ async def run_periodically(
 
 
 async def send_message_to_manipulator() -> None:
+    print('getting messages')
     messages = await consumer.get_last_messages()
+    print('analyzing')
     status = analytics.analyze(messages)
     message_to_send = json.dumps(
         {
@@ -94,10 +105,12 @@ async def send_message_to_manipulator() -> None:
             "status": status.value,
         }
     )
+    print('sending message\n\n\n\n')
     await tcp_server.send_message(message_to_send)
 
 
 def initialize_database() -> None:
+    print('initializing database')
     cursor = database.cursor()
     cursor.execute(
         """
@@ -110,6 +123,7 @@ def initialize_database() -> None:
     )
     database.commit()
     cursor.close()
+    print('database initialized')
 
 
 def add_signal_to_database(timestamp: float | int, signal: AllowedSignals) -> None:

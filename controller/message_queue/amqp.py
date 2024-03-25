@@ -1,3 +1,5 @@
+import asyncio
+
 import aio_pika
 from common.config import config
 
@@ -10,9 +12,15 @@ class AMQP:
         self.queue: aio_pika.abc.AbstractQueue | None = None
 
     async def connect(self):
-        self.connection = await aio_pika.connect_robust(
-            config.RABBITMQ_URL, timeout=240
-        )
+        while True:
+            try:
+                self.connection = await aio_pika.connect_robust(
+                    config.RABBITMQ_URL, timeout=240
+                )
+            except aio_pika.exceptions.AMQPConnectionError:
+                await asyncio.sleep(1)
+            else:
+                break
         self.channel = await self.connection.channel()
         self.exchange = await self.channel.declare_exchange(
             config.RABBITMQ_EXCHANGE, aio_pika.ExchangeType.DIRECT, durable=True

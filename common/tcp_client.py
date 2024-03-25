@@ -18,7 +18,7 @@ class TCPClient:
 
     async def connect(self) -> None:
         self.reader, self.writer = await asyncio.open_connection(
-            self.host_ip, self.port
+            'controller', self.port
         )
 
     async def disconnect(self) -> None:
@@ -30,6 +30,7 @@ class TCPClient:
             while True:
                 message = await self.reader.read(1024)
                 if not message:
+                    print('no messages')
                     break
                 yield message.decode()
         except asyncio.CancelledError:
