@@ -27,12 +27,7 @@ class Consumer(AMQP):
 
             async with message.process(ignore_processed=True):
                 message_unpacked = self.unpack_message(message)
-
-                if (
-                    call_timestamp - message_unpacked.timestamp
-                    < config.MANIPULATOR_UPDATE_TIME
-                ):
-                    messages.append(message_unpacked)
+                messages.append(message_unpacked)
 
             if (
                 datetime.utcnow().timestamp() - call_timestamp

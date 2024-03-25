@@ -29,7 +29,7 @@ class Producer(AMQP):
                 self.exchange.publish(
                     aio_pika.Message(
                         body=message_body,
-                        expiration=config.MANIPULATOR_UPDATE_TIME * 1000,
+                        expiration=config.MANIPULATOR_UPDATE_TIME,
                     ),
                     routing_key=config.RABBITMQ_QUEUE,
                 )
