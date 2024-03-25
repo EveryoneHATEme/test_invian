@@ -18,6 +18,11 @@ from common import TCPServer, config
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+    """
+    Make required connections and setups before the application starts receiving requests
+    :param _app:
+    :return:
+    """
     await consumer.connect()
     await producer.connect()
     task = asyncio.create_task(run_periodically(send_message_to_manipulator))
@@ -43,6 +48,13 @@ database = sqlite3.connect("manipulator_signals.db")
 async def get_sensor_messages(
     sensor_data: SensorDataModel, background_tasks: BackgroundTasks
 ) -> Response:
+    """
+    API for sensors
+    Sends received message to the RabbitMQ's queue
+    :param sensor_data:
+    :param background_tasks:
+    :return: Empty response with code 200
+    """
     background_tasks.add_task(producer.add_sensor_message, sensor_data)
     return Response()
 
@@ -66,15 +78,22 @@ async def get_history(from_timestamp: int, to_timestamp: int) -> Response:
     )
 
 
-@app.get('/healthcheck')
+@app.get("/healthcheck")
 async def get_healthcheck() -> Response:
-    return Response('OK')
+    return Response("OK")
 
 
 async def run_periodically(
     func: Callable[[], Awaitable[None]],
     period: int | float = config.MANIPULATOR_UPDATE_TIME,
 ) -> None:
+    """
+    Run given async function periodically with given period
+    :param func:
+    :param period:
+    :return:
+    """
+
     sleep_time = period
     try:
         while True:
@@ -91,14 +110,24 @@ async def run_periodically(
 
 
 async def send_message_to_manipulator() -> None:
+    """
+    Send message to the manipulator using TCP connection
+    Also saves message in database
+    :return:
+    """
+
     messages = await consumer.get_last_messages()
     status = analytics.analyze(messages)
+    message_datetime = datetime.now(timezone("UTC"))
+
     message_to_send = json.dumps(
         {
-            "datetime": datetime.now(timezone("UTC")).strftime("%Y-%m-%dT%H:%M:%S"),
+            "datetime": message_datetime.strftime("%Y-%m-%dT%H:%M:%S"),
             "status": status.value,
         }
     )
+    add_signal_to_database(message_datetime.timestamp(), status)
+
     await tcp_server.send_message(message_to_send)
 
 

@@ -5,6 +5,10 @@ from common.config import config
 
 
 class AMQP:
+    """
+    Inherited class for producer and consumer that implements the connection to RabbitMQ
+    """
+
     def __init__(self):
         self.connection: aio_pika.abc.AbstractRobustConnection | None = None
         self.channel: aio_pika.abc.AbstractChannel | None = None

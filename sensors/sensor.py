@@ -9,6 +9,10 @@ from common import config
 
 
 class Sensor:
+    """
+    To use call method start, this will start the loop
+    """
+
     def __init__(
         self,
         controller_address: str = config.CONTROLLER_URL,
@@ -26,6 +30,16 @@ class Sensor:
         self.session.close()
 
     def send(self, payload: int) -> None:
+        """
+        Send payload to the server as JSON
+        {
+            "datetime": "%Y-%m-%dT%H:%M:%S",
+            "payload": int
+        }
+
+        :param payload: generated (or read from real world, lol) data, needed to be sent to server
+        :return:
+        """
         self.payload["datetime"] = datetime.now(timezone("UTC")).strftime(
             "%Y-%m-%dT%H:%M:%S"
         )
@@ -36,9 +50,10 @@ class Sensor:
                 url=self.controller_address, json=self.payload, timeout=self.timeout
             )
         except requests.exceptions.Timeout:
-            # print("Request timed")
+            # it takes too much time to make request
             return
         except requests.exceptions.ConnectionError:
+            # this happens because server not yet loaded in most cases
             sleep(1)
 
     def start(self) -> None:

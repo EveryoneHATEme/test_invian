@@ -10,6 +10,12 @@ from common.config import config
 
 
 class Producer(AMQP):
+    """
+    RabbitMQ's producer, used to append queue with given message
+    Each message has expiration time of config.MANIPULATOR_UPDATE_TIME seconds
+    Messages in the queue are stored as C structures
+    """
+
     def __init__(self, batch_size: int = 128) -> None:
         AMQP.__init__(self)
         self.outstanding_messages = []

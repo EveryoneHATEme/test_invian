@@ -6,6 +6,11 @@ from common.tcp_client import TCPClient
 
 
 class Manipulator:
+    """
+    Receives messages from controller and prints them to console
+    Uses TCP connection to receive messages
+    """
+
     def __init__(self):
         self.client = TCPClient()
 

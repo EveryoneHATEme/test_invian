@@ -6,6 +6,10 @@ from common.config import config
 
 
 class TCPClient:
+    """
+    TCP client implementation, uses asynchronous socket connection
+    """
+
     def __init__(
         self,
         host_ip: str = config.CONTROLLER_IP,
@@ -18,7 +22,7 @@ class TCPClient:
 
     async def connect(self) -> None:
         self.reader, self.writer = await asyncio.open_connection(
-            'controller', self.port
+            "controller", self.port
         )
 
     async def disconnect(self) -> None:
@@ -30,7 +34,7 @@ class TCPClient:
             while True:
                 message = await self.reader.read(1024)
                 if not message:
-                    print('no messages')
+                    print("no messages")
                     break
                 yield message.decode()
         except asyncio.CancelledError:

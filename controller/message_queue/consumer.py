@@ -11,6 +11,10 @@ Message = namedtuple("Message", ["timestamp", "payload"])
 
 
 class Consumer(AMQP):
+    """
+    RabbitMQ's consumer used to pull messages from queue
+    """
+
     async def get_last_messages(self) -> list[Message[int, int]]:
         messages = []
 

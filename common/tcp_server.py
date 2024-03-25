@@ -5,6 +5,10 @@ from common.config import config
 
 
 class TCPServer:
+    """
+    TCP server implementation, uses asynchronous socket connection
+    """
+
     def __init__(
         self, server_ip=config.CONTROLLER_IP, port=config.CONTROLLER_TCP_PORT
     ) -> None:
