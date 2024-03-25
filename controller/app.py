@@ -127,6 +127,7 @@ async def send_message_to_manipulator() -> None:
         }
     )
     add_signal_to_database(message_datetime.timestamp(), status)
+    print(f"Sending message: {message_to_send}")
 
     await tcp_server.send_message(message_to_send)
 
